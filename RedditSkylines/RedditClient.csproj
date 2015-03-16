@@ -55,7 +55,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
-    <Compile Include="RedditSkylines.cs" />
+    <Compile Include="Message.cs" />
+    <Compile Include="ModInfo.cs" />
+    <Compile Include="RedditUpdater.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleJSON.cs" />
     <Compile Include="TinyWeb.cs" />
