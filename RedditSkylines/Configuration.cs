@@ -12,12 +12,14 @@ namespace RedditClient
         private const string TIMER_KEY = "updateFrequency";
         private const string NOSOUND_KEY = "noSound";
         private const string FILTER_MESSAGES_KEY = "filterMessages";
+        private const string REPLACING_SUBREDDIT = "filterThroughSubreddit";
 
         public static List<string> Subreddits;
         public static int TimerInSeconds = 300;
         public static int NoSound = 0;
 
         public static int FilterMessages = 0;
+        public static string ReplacingSubreddit = null;
 
         private static string ConfigPath
         {
@@ -77,7 +79,7 @@ namespace RedditClient
                             NoSound = newSound;
                         }
                     }
-                    else if(line.StartsWith(FILTER_MESSAGES_KEY + "="))
+                    else if (line.StartsWith(FILTER_MESSAGES_KEY + "="))
                     {
                         var time = line.Substring(FILTER_MESSAGES_KEY.Length + 1);
 
@@ -86,6 +88,11 @@ namespace RedditClient
                         {
                             FilterMessages = newVal;
                         }
+                    }
+                    else if (line.StartsWith(REPLACING_SUBREDDIT + "="))
+                    {
+                        var time = line.Substring(REPLACING_SUBREDDIT.Length + 1);
+                        ReplacingSubreddit = time;
                     }
 
                     // Just reddit names, presumably

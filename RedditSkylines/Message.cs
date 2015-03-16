@@ -8,9 +8,9 @@ namespace RedditClient
 {
     public class Message : MessageBase
     {
-        private string m_author;
-        private string m_subreddit;
-        private string m_text;
+        internal string m_author;
+        internal string m_subreddit;
+        internal string m_text;
 
         public Message(string author, string subreddit, string text)
         {
@@ -61,6 +61,38 @@ namespace RedditClient
 
         public override void AfterDeserialize(ColossalFramework.IO.DataSerializer s)
         {
+        }
+    }
+
+    public class MessageWithSender : Message
+    {
+        private uint m_sender;
+
+        public MessageWithSender(string author, string subreddit, string text, uint sender) : base(author, subreddit, text)
+        {
+            m_sender = sender;
+        }
+
+        public override string GetSenderName()
+        {
+            return CitizenManager.instance.GetCitizenName(m_sender) ?? base.GetSenderName();
+        }
+
+        public override uint GetSenderID()
+        {
+            return m_sender;
+        }
+
+        public override void Serialize(ColossalFramework.IO.DataSerializer s)
+        {
+            base.Serialize(s);
+            s.WriteUInt32(m_sender);
+        }
+
+        public override void Deserialize(ColossalFramework.IO.DataSerializer s)
+        {
+            base.Deserialize(s);
+            m_sender = s.ReadUInt32();
         }
     }
 }

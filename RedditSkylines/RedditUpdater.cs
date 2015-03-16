@@ -1,4 +1,5 @@
 ﻿using ColossalFramework;
+using ColossalFramework.Globalization;
 using ColossalFramework.UI;
 using ICities;
 using System;
@@ -19,6 +20,7 @@ namespace RedditClient
 
         private Timer timer = new Timer();
         private Dictionary<string, Queue<string>> lastPostIds = new Dictionary<string, Queue<string>>();
+        private JsonDb db = new JsonDb();
 
         private AudioClip messageSound = null;
 
@@ -45,6 +47,8 @@ namespace RedditClient
 
                     if (Configuration.NoSound > 0)
                         Singleton<ChirpPanel>.instance.m_NotificationSound = null;
+
+                    db.Save();
                 }
                 else
                 {
@@ -116,6 +120,10 @@ namespace RedditClient
                 {
                     ChirpPanel.instance.m_NotificationSound = null;
                     lastCitizenMessage = cm;
+
+                    Message m = db.GetRandom(cm.m_messageID);
+                    if (m != null)
+                        AddMessage(new MessageWithSender(m.m_author, m.m_subreddit, m.m_text, cm.GetSenderID()));
                 }
             }
         }

@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="JsonDb.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="ModInfo.cs" />
     <Compile Include="RedditUpdater.cs" />

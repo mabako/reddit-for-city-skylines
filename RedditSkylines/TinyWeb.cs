@@ -14,7 +14,12 @@ namespace RedditClient
         private const string BASE_URL = "http://www.reddit.com{0}.json?limit={1}";
         public static IEnumerable<RedditPost> FindLastPosts(string subreddit)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format(BASE_URL, subreddit, RedditUpdater.MAX_REDDIT_POSTS_PER_SUBREDDIT));
+            return FindLastPosts(string.Format(BASE_URL, subreddit, RedditUpdater.MAX_REDDIT_POSTS_PER_SUBREDDIT));
+        }
+
+        private static IEnumerable<RedditPost> Find(string url)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = WebRequestMethods.Http.Get;
             request.Accept = "text/json";
 
