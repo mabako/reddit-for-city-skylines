@@ -37,14 +37,15 @@ namespace RedditClient
             try
             {
                 string[] configLines = File.ReadAllLines(ConfigPath);
-                Regex r = new Regex("^[a-zA-Z0-9]*$");
+                Regex r = new Regex("^[a-zA-Z0-9/]*$");
 
                 Subreddits = new List<string>();
+                bool requestSave = false;
 
-                foreach (string x in configLines)
+                for (int i = 0; i < configLines.Length; ++ i)
                 {
                     // Remove unnecessary spaces
-                    var line = x.Trim();
+                    var line = configLines[i].Trim();
 
                     // Comment lines
                     if (line.StartsWith("#") || line.StartsWith(";"))
@@ -64,25 +65,56 @@ namespace RedditClient
 
                     // Just reddit names, presumably
                     if (line.Length > 1 && r.IsMatch(line))
+                    {
+                        if (line.IndexOf('/') == -1)
+                        {
+                            line = string.Format("/r/{0}/new", line);
+                            configLines[i] = line;
+
+                            requestSave = true;
+                        }
                         Subreddits.Add(line);
+                    }
+                }
+
+                if (requestSave)
+                {
+                    using (StreamWriter sw = new StreamWriter(ConfigPath))
+                    {
+                        foreach (string line in configLines)
+                            sw.WriteLine(line);
+                    }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                TimerInSeconds = 300;
+                Subreddits = DefaultSubreddits;
+
                 using (StreamWriter sw = new StreamWriter(ConfigPath))
                 {
-                    TimerInSeconds = 300;
+                    sw.WriteLine("# Reddit for Chirpy");
+                    sw.WriteLine();
+
                     sw.WriteLine("# How often should new messages be displayed?");
                     sw.WriteLine("# Default: 300 (which is 5 minutes)");
                     sw.WriteLine("{0}={1}", TIMER_KEY, TimerInSeconds);
 
                     sw.WriteLine();
                     sw.WriteLine("# One subreddit per line");
-                    Subreddits = DefaultSubreddits;
+
                     foreach (string subreddit in Subreddits)
                         sw.WriteLine("{0}", subreddit);
+
+                    sw.WriteLine();
+                    sw.WriteLine("# (Info) Your config file was regenerated because of {0}: {1}", e.GetType().ToString(), e.Message);
                 }
             }
+        }
+
+        private static void SaveConfig()
+        {
+            
         }
         
         private static List<string> DefaultSubreddits
@@ -90,9 +122,9 @@ namespace RedditClient
             get
             {
                 var s = new List<string>();
-                s.Add("ShowerThoughts");
-                s.Add("CrazyIdeas");
-                s.Add("ChirpIt");
+                s.Add("/r/ShowerThoughts/rising/");
+                s.Add("/r/CrazyIdeas/new/");
+                s.Add("/r/ChirpIt/new/");
                 return s;
             }
         }

@@ -11,7 +11,7 @@ namespace RedditClient
 {
     internal class TinyWeb
     {
-        private const string BASE_URL = "http://www.reddit.com/r/{0}/new.json?limit={1}";
+        private const string BASE_URL = "http://www.reddit.com{0}.json?limit={1}";
         public static IEnumerable<RedditPost> FindLastPosts(string subreddit)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format(BASE_URL, subreddit, RedditUpdater.MAX_REDDIT_POSTS_PER_SUBREDDIT));
@@ -35,7 +35,9 @@ namespace RedditClient
                     JsonObject child = (JsonObject)obj;
                     JsonObject data = (JsonObject)child["data"];
 
-                    list.Add(createPost(data));
+                    var post = createPost(data);
+                    if(post != null)
+                        list.Add(post);
                 }
                 return list;
             }
@@ -43,8 +45,17 @@ namespace RedditClient
 
         private static RedditPost createPost(JsonObject data)
         {
-            var post = new RedditPost { id = data["id"].ToString(), title = data["title"].ToString(), author = data["author"].ToString() };
+            // Sticky post?
+            DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, "Type of stickied is " + data["stickied"].GetType().Name);
+            var sticky = data["stickied"];
+            if(sticky is Boolean)
+                if ((Boolean)sticky == true)
+                    return null;
 
+            // create post object
+            var post = new RedditPost { id = data["id"].ToString(), title = data["title"].ToString(), author = data["author"].ToString(), subreddit = data["subreddit"].ToString() };
+
+            // does it have a flair?
             var flair = data["link_flair_text"];
             if (flair != null)
             {
@@ -60,5 +71,6 @@ namespace RedditClient
         internal string title;
         internal string author;
         internal string id;
+        internal string subreddit;
     }
 }

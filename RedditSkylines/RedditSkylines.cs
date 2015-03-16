@@ -3,6 +3,7 @@ using ICities;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Timers;
 
 namespace RedditClient
@@ -23,6 +24,7 @@ namespace RedditClient
     public class RedditUpdater : ChirperExtensionBase
     {
         public const int MAX_REDDIT_POSTS_PER_SUBREDDIT = 5;
+        public const int MAX_CACHED_REDDIT_POSTS_PER_SUBREDDIT = 50;
 
         private Timer timer = new Timer();
         private Dictionary<string, Queue<string>> lastPostIds = new Dictionary<string, Queue<string>>();
@@ -69,7 +71,7 @@ namespace RedditClient
             {
                 // Remove posts that are no longer checked against; plus some for possible deletions
                 Queue<string> lastPostId = lastPostIds[subreddit];
-                while (lastPostId.Count > MAX_REDDIT_POSTS_PER_SUBREDDIT * 2)
+                while (lastPostId.Count > MAX_CACHED_REDDIT_POSTS_PER_SUBREDDIT)
                     lastPostId.Dequeue();
 
                 // Fetch a number of latest posts
@@ -79,7 +81,7 @@ namespace RedditClient
                     // Find the first one we haven't shown yet
                     if (!lastPostId.Contains(newestPost.id))
                     {
-                        AddMessage(new Message(newestPost.author, subreddit, newestPost.title));
+                        AddMessage(new Message(newestPost.author, newestPost.subreddit, newestPost.title));
                         lastPostIds[subreddit].Enqueue(newestPost.id);
                         return;
                     }
