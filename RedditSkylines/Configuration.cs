@@ -11,10 +11,13 @@ namespace RedditClient
     {
         private const string TIMER_KEY = "updateFrequency";
         private const string NOSOUND_KEY = "noSound";
+        private const string FILTER_MESSAGES_KEY = "filterMessages";
 
         public static List<string> Subreddits;
         public static int TimerInSeconds = 300;
         public static int NoSound = 0;
+
+        public static int FilterMessages = 0;
 
         private static string ConfigPath
         {
@@ -69,9 +72,19 @@ namespace RedditClient
                         var time = line.Substring(NOSOUND_KEY.Length + 1);
 
                         int newSound = -1;
-                        if (Int32.TryParse(time, out newSound) && (newSound >= 0 || newSound <= 2))
+                        if (Int32.TryParse(time, out newSound) && (newSound >= 0 || newSound <= 1))
                         {
                             NoSound = newSound;
+                        }
+                    }
+                    else if(line.StartsWith(FILTER_MESSAGES_KEY + "="))
+                    {
+                        var time = line.Substring(FILTER_MESSAGES_KEY.Length + 1);
+
+                        int newVal = -1;
+                        if (Int32.TryParse(time, out newVal) && (newVal >= 0 || newVal <= 2))
+                        {
+                            FilterMessages = newVal;
                         }
                     }
 
@@ -118,8 +131,6 @@ namespace RedditClient
                     sw.WriteLine();
 
                     sw.WriteLine("# Set this to 1 to disable chirping sounds.");
-                    sw.WriteLine("#   Breaks compatibility with non-default chirper panels (like the marquee one).");
-                    sw.WriteLine("#   Set to 2 to force the popup to open after each new message, 1 will leave it collapsed.");
                     sw.WriteLine("{0}={1}", NOSOUND_KEY, NoSound);
 
                     sw.WriteLine();
