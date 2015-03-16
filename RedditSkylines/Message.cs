@@ -39,13 +39,16 @@ namespace RedditClient
                     int length = str.Length;
                     if(length == 0)
                         continue;
+
+                    if (!Char.IsLetter(str[0]))
+                        continue;
                     
                     // UPPERCASE WORDS ARE MORE IMPORTANT
                     if (Char.IsUpper(str[0]))
                         length += 2;
 
                     // random bonus factor
-                    length += new Random().Next(4);
+                    length += new Random().Next(2);
 
                     if (length > longestWord.Length)
                     {
