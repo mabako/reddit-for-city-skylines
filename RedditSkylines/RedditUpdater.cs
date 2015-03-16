@@ -24,6 +24,14 @@ namespace RedditClient
 
         private CitizenMessage lastCitizenMessage = null;
 
+        private bool IsPaused
+        {
+            get
+            {
+                return SimulationManager.instance.SimulationPaused;
+            }
+        }
+
         public override void OnCreated(IChirper threading)
         {
             try
@@ -67,8 +75,7 @@ namespace RedditClient
 
         private void UpdateRedditPosts()
         {
-            // We don't care a whole lot if the simulation is paused
-            if (SimulationManager.instance.SimulationPaused)
+            if (IsPaused)
                 return;
 
             // Pick a subreddit at random
@@ -101,6 +108,9 @@ namespace RedditClient
 
         private void AddMessage(Message m)
         {
+            if (IsPaused)
+                return;
+
             MessageManager.instance.QueueMessage(m);
         }
 
