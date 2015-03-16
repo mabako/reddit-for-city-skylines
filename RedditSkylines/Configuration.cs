@@ -10,9 +10,11 @@ namespace RedditClient
     class Configuration
     {
         private const string TIMER_KEY = "updateFrequency";
+        private const string NOSOUND_KEY = "noSound";
 
         public static List<string> Subreddits;
         public static int TimerInSeconds = 300;
+        public static int NoSound = 0;
 
         private static string ConfigPath
         {
@@ -62,9 +64,19 @@ namespace RedditClient
                             TimerInSeconds = newTimer;
                         }
                     }
+                    else if (line.StartsWith(NOSOUND_KEY + "="))
+                    {
+                        var time = line.Substring(NOSOUND_KEY.Length + 1);
+
+                        int newSound = -1;
+                        if (Int32.TryParse(time, out newSound) && (newSound >= 0 || newSound <= 2))
+                        {
+                            NoSound = newSound;
+                        }
+                    }
 
                     // Just reddit names, presumably
-                    if (line.Length > 1 && r.IsMatch(line))
+                    else if (line.Length > 1 && r.IsMatch(line))
                     {
                         if (line.IndexOf('/') == -1)
                         {
@@ -89,6 +101,7 @@ namespace RedditClient
             catch (Exception e)
             {
                 TimerInSeconds = 300;
+                NoSound = 0;
                 Subreddits = DefaultSubreddits;
 
                 using (StreamWriter sw = new StreamWriter(ConfigPath))
@@ -99,6 +112,12 @@ namespace RedditClient
                     sw.WriteLine("# How often should new messages be displayed?");
                     sw.WriteLine("# Default: 300 (which is 5 minutes)");
                     sw.WriteLine("{0}={1}", TIMER_KEY, TimerInSeconds);
+                    sw.WriteLine();
+
+                    sw.WriteLine("# Set this to 1 to disable chirping sounds.");
+                    sw.WriteLine("#   Breaks compatibility with non-default chirper panels (like the marquee one).");
+                    sw.WriteLine("#   Set to 2 to force the popup to open after each new message, 1 will leave it collapsed.");
+                    sw.WriteLine("{0}={1}", NOSOUND_KEY, NoSound);
 
                     sw.WriteLine();
                     sw.WriteLine("# One subreddit per line");

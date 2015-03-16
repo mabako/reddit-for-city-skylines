@@ -36,7 +36,7 @@ namespace RedditClient
                 Configuration.Load();
                 if (Configuration.Subreddits.Count >= 1)
                 {
-                    DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Going to show a new message from one of {0} subreddits every {1} seconds", Configuration.Subreddits.Count, Configuration.TimerInSeconds));
+                    DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Going to show a new message from one of {0} subreddits every {1} seconds (NoSound = {2})", Configuration.Subreddits.Count, Configuration.TimerInSeconds, Configuration.NoSound));
 
                     foreach (string subreddit in Configuration.Subreddits)
                         lastPostIds.Add(subreddit, new Queue<string>());
@@ -95,7 +95,22 @@ namespace RedditClient
 
         private void AddMessage(Message m)
         {
-            Singleton<MessageManager>.instance.QueueMessage(m);
+            if (Configuration.NoSound >= 1)
+            {
+                // This behaviour breaks custom chirper panels, like the marquee overlay. Don't use it if you need custom chirps.
+                var panel = Singleton<ChirpPanel>.instance;
+
+                if (Configuration.NoSound >= 2)
+                {
+                    if (!panel.isShowing)
+                        panel.Expand(10f);
+                }
+                panel.AddEntry(m, true);
+            }
+            else
+            {
+                Singleton<MessageManager>.instance.QueueMessage(m);
+            }
         }
     }
     public class Message : MessageBase
