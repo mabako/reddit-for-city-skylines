@@ -92,6 +92,7 @@ namespace RedditClient
                 var s = new List<string>();
                 s.Add("ShowerThoughts");
                 s.Add("CrazyIdeas");
+                s.Add("ChirpIt");
                 return s;
             }
         }
