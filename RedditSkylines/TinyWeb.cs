@@ -11,10 +11,10 @@ namespace RedditClient
 {
     internal class TinyWeb
     {
-        private const string SHOWERTHOUGHTS = "http://www.reddit.com/r/{0}/new.json?limit=1";
-        public static RedditPost FindLastPost(string subreddit)
+        private const string BASE_URL = "http://www.reddit.com/r/{0}/new.json?limit={1}";
+        public static IEnumerable<RedditPost> FindLastPosts(string subreddit)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format(SHOWERTHOUGHTS, subreddit));
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format(BASE_URL, subreddit, RedditUpdater.MAX_REDDIT_POSTS_PER_SUBREDDIT));
             request.Method = WebRequestMethods.Http.Get;
             request.Accept = "text/json";
 
@@ -28,19 +28,30 @@ namespace RedditClient
                 JsonObject root = (JsonObject)SimpleJson.SimpleJson.DeserializeObject(str);
                 JsonObject rootData = (JsonObject)root["data"];
                 JsonArray rootChildren = (JsonArray)rootData["children"];
-                JsonObject firstChild = (JsonObject)rootChildren[0];
-                JsonObject first = (JsonObject)firstChild["data"];
 
-                var post = new RedditPost { id = first["id"].ToString(), title = first["title"].ToString(), author = first["author"].ToString() };
-
-                var flair = first["link_flair_text"];
-                if(flair != null)
+                var list = new List<RedditPost>();
+                foreach(object obj in rootChildren)
                 {
-                    post.title += " #" + flair.ToString().Replace(" ", "");
-                }
+                    JsonObject child = (JsonObject)obj;
+                    JsonObject data = (JsonObject)child["data"];
 
-                return post;
+                    list.Add(createPost(data));
+                }
+                return list;
             }
+        }
+
+        private static RedditPost createPost(JsonObject data)
+        {
+            var post = new RedditPost { id = data["id"].ToString(), title = data["title"].ToString(), author = data["author"].ToString() };
+
+            var flair = data["link_flair_text"];
+            if (flair != null)
+            {
+                post.title += " #" + flair.ToString().Replace(" ", "");
+            }
+
+            return post;
         }
     }
 

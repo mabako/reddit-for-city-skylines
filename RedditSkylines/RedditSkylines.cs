@@ -22,8 +22,10 @@ namespace RedditClient
 
     public class RedditUpdater : ChirperExtensionBase
     {
+        public const int MAX_REDDIT_POSTS_PER_SUBREDDIT = 5;
+
         private Timer timer = new Timer();
-        private Dictionary<string, string> lastPostIds = new Dictionary<string,string>();
+        private Dictionary<string, Queue<string>> lastPostIds = new Dictionary<string, Queue<string>>();
 
         public override void OnCreated(IChirper threading)
         {
@@ -35,7 +37,7 @@ namespace RedditClient
                     DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Going to show a new message from one of {0} subreddits every {1} seconds", Configuration.Subreddits.Count, Configuration.TimerInSeconds));
 
                     foreach (string subreddit in Configuration.Subreddits)
-                        lastPostIds.Add(subreddit, null);
+                        lastPostIds.Add(subreddit, new Queue<string>());
 
                     timer.AutoReset = true;
                     timer.Elapsed += new ElapsedEventHandler((sender, e) => UpdateRedditPosts());
@@ -61,16 +63,26 @@ namespace RedditClient
 
         private void UpdateRedditPosts()
         {
+            // Pick a subreddit at random
             string subreddit = Configuration.Subreddits[new Random().Next(Configuration.Subreddits.Count)];
             try
             {
-                string lastPostId = lastPostIds[subreddit];
+                // Remove posts that are no longer checked against; plus some for possible deletions
+                Queue<string> lastPostId = lastPostIds[subreddit];
+                while (lastPostId.Count > MAX_REDDIT_POSTS_PER_SUBREDDIT * 2)
+                    lastPostId.Dequeue();
 
-                RedditPost newestPost = TinyWeb.FindLastPost(subreddit);
-                if (newestPost.id != lastPostId)
+                // Fetch a number of latest posts
+                IEnumerable<RedditPost> newestPosts = TinyWeb.FindLastPosts(subreddit);
+                foreach (RedditPost newestPost in newestPosts)
                 {
-                    AddMessage(new Message(newestPost.author, subreddit, newestPost.title));
-                    lastPostIds[subreddit] = newestPost.id;
+                    // Find the first one we haven't shown yet
+                    if (!lastPostId.Contains(newestPost.id))
+                    {
+                        AddMessage(new Message(newestPost.author, subreddit, newestPost.title));
+                        lastPostIds[subreddit].Enqueue(newestPost.id);
+                        return;
+                    }
                 }
             }
             catch (Exception e)
