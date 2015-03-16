@@ -69,7 +69,7 @@ namespace RedditClient
                 RedditPost newestPost = TinyWeb.FindLastPost(subreddit);
                 if (newestPost.id != lastPostId)
                 {
-                    AddMessage(new Message { senderName = string.Format("{0} on /r/{1}", newestPost.author, subreddit), text = newestPost.title });
+                    AddMessage(new Message(newestPost.author, subreddit, newestPost.title));
                     lastPostIds[subreddit] = newestPost.id;
                 }
             }
@@ -81,16 +81,59 @@ namespace RedditClient
 
         private void AddMessage(Message m)
         {
-            Singleton<ChirpPanel>.instance.AddMessage(m);
+            Singleton<MessageManager>.instance.QueueMessage(m);
+            //Singleton<ChirpPanel>.instance.AddMessage(m);
         }
     }
-    public class Message : IChirperMessage
+    public class Message : MessageBase
     {
-        public uint senderID
+        private string m_author;
+        private string m_subreddit;
+        private string m_text;
+
+        public Message(string author, string subreddit, string text)
         {
-            get { return 0; }
+            m_author = author;
+            m_subreddit = subreddit;
+            m_text = text;
         }
-        public string senderName { get; set; }
-        public string text { get; set; }
+
+        public override uint GetSenderID()
+        {
+            return 0;
+        }
+
+        public override string GetSenderName()
+        {
+            return string.Format("{0} on /r/{1}", m_author, m_subreddit);
+        }
+
+        public override string GetText()
+        {
+            return m_text;
+        }
+
+        public override bool IsSimilarMessage(MessageBase other)
+        {
+            return false;
+        }
+
+        public override void Serialize(ColossalFramework.IO.DataSerializer s)
+        {
+            s.WriteSharedString(m_author);
+            s.WriteSharedString(m_subreddit);
+            s.WriteSharedString(m_text);
+        }
+
+        public override void Deserialize(ColossalFramework.IO.DataSerializer s)
+        {
+            m_author = s.ReadSharedString();
+            m_subreddit = s.ReadSharedString();
+            m_text = s.ReadSharedString();
+        }
+
+        public override void AfterDeserialize(ColossalFramework.IO.DataSerializer s)
+        {
+        }
     }
 }
