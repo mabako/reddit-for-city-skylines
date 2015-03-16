@@ -46,7 +46,6 @@ namespace RedditClient
         private static RedditPost createPost(JsonObject data)
         {
             // Sticky post?
-            DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, "Type of stickied is " + data["stickied"].GetType().Name);
             var sticky = data["stickied"];
             if(sticky is Boolean)
                 if ((Boolean)sticky == true)
