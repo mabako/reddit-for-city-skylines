@@ -17,6 +17,56 @@ namespace RedditClient
             m_author = author;
             m_subreddit = subreddit;
             m_text = text;
+
+            HashtagThis();
+        }
+
+        private void HashtagThis()
+        {
+            var split = m_text.Split(' ');
+
+            int desiredHashtags = split.Length / 4;
+            int hashtags = m_text.Length - m_text.Replace("#", "").Length;
+            if (hashtags >= desiredHashtags)
+                return;
+
+            // Get the longest, non-hashtagged word
+            string longestWord = "";
+            foreach(string str in split)
+            {
+                if (!str.StartsWith("#"))
+                {
+                    int length = str.Length;
+                    if(length == 0)
+                        continue;
+                    
+                    // UPPERCASE WORDS ARE MORE IMPORTANT
+                    if (Char.IsUpper(str[0]))
+                        length += 2;
+
+                    // random bonus factor
+                    length += new Random().Next(4);
+
+                    if (length > longestWord.Length)
+                    {
+                        longestWord = str;
+                    }
+                }
+            }
+
+            if (longestWord == "")
+                return;
+
+            for (int i = 0; i < split.Length; ++i)
+            {
+                if (longestWord.Equals(split[i], StringComparison.InvariantCultureIgnoreCase))
+                {
+                    split[i] = "#" + split[i];
+                }
+            }
+            
+            m_text = string.Join(" ", split);
+            HashtagThis();
         }
 
         public override uint GetSenderID()
@@ -42,7 +92,7 @@ namespace RedditClient
         public override bool IsSimilarMessage(MessageBase other)
         {
             var m = other as Message;
-            return m != null && ((m.m_author == m_author && m.m_subreddit == m_subreddit) || m.m_text == m_text);
+            return m != null && ((m.m_author == m_author && m.m_subreddit == m_subreddit) || m.m_text.Replace("#", "") == m_text.Replace("#", ""));
         }
 
         public override void Serialize(ColossalFramework.IO.DataSerializer s)
