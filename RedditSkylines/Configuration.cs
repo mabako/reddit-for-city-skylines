@@ -100,6 +100,8 @@ namespace RedditClient
             }
             catch (Exception e)
             {
+                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Reddit: Config regenerated {0}: {1}", e.GetType().ToString(), e.Message));
+
                 TimerInSeconds = 300;
                 NoSound = 0;
                 Subreddits = DefaultSubreddits;
@@ -126,7 +128,9 @@ namespace RedditClient
                         sw.WriteLine("{0}", subreddit);
 
                     sw.WriteLine();
-                    sw.WriteLine("# (Info) Your config file was regenerated because of {0}: {1}", e.GetType().ToString(), e.Message);
+                    sw.WriteLine("# Multireddit example (remove the '#' to use)");
+                    sw.WriteLine("# /user/ccaatt/m/chirps/new");
+
                 }
             }
         }
