@@ -31,7 +31,7 @@ namespace RedditClient
                 JsonObject firstChild = (JsonObject)rootChildren[0];
                 JsonObject first = (JsonObject)firstChild["data"];
 
-                return new RedditPost { id = first["id"].ToString(), title = first["title"].ToString(), author = "/u/" + first["author"].ToString() };
+                return new RedditPost { id = first["id"].ToString(), title = first["title"].ToString(), author = first["author"].ToString() };
             }
         }
     }
