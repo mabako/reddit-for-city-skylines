@@ -82,7 +82,6 @@ namespace RedditClient
         private void AddMessage(Message m)
         {
             Singleton<MessageManager>.instance.QueueMessage(m);
-            //Singleton<ChirpPanel>.instance.AddMessage(m);
         }
     }
     public class Message : MessageBase
