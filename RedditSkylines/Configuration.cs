@@ -109,6 +109,7 @@ namespace RedditClient
                 using (StreamWriter sw = new StreamWriter(ConfigPath))
                 {
                     sw.WriteLine("# Reddit for Chirpy");
+                    sw.WriteLine("# https://github.com/mabako/reddit-for-city-skylines/wiki/Configuration");
                     sw.WriteLine();
 
                     sw.WriteLine("# How often should new messages be displayed?");
