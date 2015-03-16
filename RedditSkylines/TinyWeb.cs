@@ -59,7 +59,11 @@ namespace RedditClient
             var flair = data["link_flair_text"];
             if (flair != null)
             {
-                post.title += " #" + flair.ToString().Replace(" ", "");
+                var flairStr = flair.ToString();
+                if (flairStr.Equals("meta", StringComparison.InvariantCultureIgnoreCase))
+                    return null;
+
+                post.title += " #" + flairStr.Replace(" ", "");
             }
 
             return post;
