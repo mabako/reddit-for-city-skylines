@@ -45,6 +45,13 @@ namespace RedditClient
 
         private static RedditPost createPost(JsonObject data)
         {
+            // Any karma at all?
+            var karma = data["score"];
+            if(karma is Int32)
+                if((Int32)karma <= 0)
+                    return null;
+
+
             // Sticky post?
             var sticky = data["stickied"];
             if(sticky is Boolean)
