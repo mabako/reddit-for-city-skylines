@@ -105,17 +105,23 @@ namespace RedditClient
 
         public override string GetSenderName()
         {
-            return string.Format("{0} on /r/{1}", m_author, m_subreddit);
+            return m_author;
         }
 
         public override string GetText()
         {
-            return m_text;
+            return string.Format("{0} #{1}", m_text, m_subreddit);
         }
 
+        /// <summary>
+        /// We basically want to ensure the same messages aren't shown twice.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public override bool IsSimilarMessage(MessageBase other)
         {
-            return false;
+            var m = other as Message;
+            return m != null && ((m.m_author == m_author && m.m_subreddit == m_subreddit) || m.m_text == m_text);
         }
 
         public override void Serialize(ColossalFramework.IO.DataSerializer s)

@@ -90,8 +90,8 @@ namespace RedditClient
             get
             {
                 var s = new List<string>();
-                s.Add("showerthoughts");
-                s.Add("crazyideas");
+                s.Add("ShowerThoughts");
+                s.Add("CrazyIdeas");
                 return s;
             }
         }
