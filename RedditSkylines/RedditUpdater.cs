@@ -45,7 +45,10 @@ namespace RedditClient
                     DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Going to show a new message from one of {0} subreddits every {1} seconds (NoSound = {2})", Configuration.Subreddits.Count, Configuration.TimerInSeconds, Configuration.NoSound));
 
                     foreach (string subreddit in Configuration.Subreddits)
-                        lastPostIds.Add(subreddit, new Queue<string>());
+                    {
+                        if(!lastPostIds.ContainsKey(subreddit))
+                            lastPostIds.Add(subreddit, new Queue<string>());
+                    }
 
                     timer.AutoReset = true;
                     timer.Elapsed += new ElapsedEventHandler((sender, e) => UpdateRedditPosts());
