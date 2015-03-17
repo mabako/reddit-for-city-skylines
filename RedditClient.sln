@@ -5,6 +5,14 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedditClient", "RedditSkylines\RedditClient.csproj", "{A28394F0-1ED9-4153-B6EB-274D290B5E38}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compatibility", "Compatibility", "{3F498AAF-364D-42E0-8786-347A263FF904}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "compat.v2", "Compatibility\v2\compat.v2.csproj", "{2811E498-8EC2-4B04-971A-96AEFBA34CF7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "compat.v3", "Compatibility\v3\compat.v3.csproj", "{2811E498-8EC2-4B04-971A-96AEFBA34C3B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "compat.v4", "Compatibility\v4\compat.v4.csproj", "{2811E498-8EC2-4B04-971A-96AEFBA34C37}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,8 +23,25 @@ Global
 		{A28394F0-1ED9-4153-B6EB-274D290B5E38}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A28394F0-1ED9-4153-B6EB-274D290B5E38}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A28394F0-1ED9-4153-B6EB-274D290B5E38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34CF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34CF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34CF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34CF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34C3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34C3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34C3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34C3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34C37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34C37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34C37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2811E498-8EC2-4B04-971A-96AEFBA34C37}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2811E498-8EC2-4B04-971A-96AEFBA34CF7} = {3F498AAF-364D-42E0-8786-347A263FF904}
+		{2811E498-8EC2-4B04-971A-96AEFBA34C3B} = {3F498AAF-364D-42E0-8786-347A263FF904}
+		{2811E498-8EC2-4B04-971A-96AEFBA34C37} = {3F498AAF-364D-42E0-8786-347A263FF904}
 	EndGlobalSection
 EndGlobal

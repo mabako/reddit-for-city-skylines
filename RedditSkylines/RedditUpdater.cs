@@ -70,7 +70,10 @@ namespace RedditClient
             timer.Stop();
             timer.Dispose();
 
-            ChirpPanel.instance.m_NotificationSound = messageSound;
+            ChirpPanel cp = ChirpPanel.instance;
+            DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("[Reddit] Releasing with {0}", cp));
+            if(cp != null)
+                cp.m_NotificationSound = messageSound;
         }
 
         private void UpdateRedditPosts()
