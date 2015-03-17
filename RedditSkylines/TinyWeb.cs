@@ -12,6 +12,9 @@ namespace RedditClient
     internal class TinyWeb
     {
         private const string BASE_URL = "http://www.reddit.com{0}.json?limit={1}";
+
+        private const string ANNOUNCEMENT_URL = "http://mabako.net/reddit-for-city-skylines/v{0}.txt";
+
         public static IEnumerable<RedditPost> FindLastPosts(string subreddit)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format(BASE_URL, subreddit, RedditUpdater.MAX_REDDIT_POSTS_PER_SUBREDDIT));
@@ -23,23 +26,43 @@ namespace RedditClient
                 if (response.StatusCode != HttpStatusCode.OK)
                     return null;
 
-                string str = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                
-                JsonObject root = (JsonObject)SimpleJson.SimpleJson.DeserializeObject(str);
-                JsonObject rootData = (JsonObject)root["data"];
-                JsonArray rootChildren = (JsonArray)rootData["children"];
-
-                var list = new List<RedditPost>();
-                foreach(object obj in rootChildren)
+                using (var sr = new StreamReader(response.GetResponseStream()))
                 {
-                    JsonObject child = (JsonObject)obj;
-                    JsonObject data = (JsonObject)child["data"];
+                    string str = sr.ReadToEnd();
 
-                    var post = createPost(data);
-                    if(post != null)
-                        list.Add(post);
+                    JsonObject root = (JsonObject)SimpleJson.SimpleJson.DeserializeObject(str);
+                    JsonObject rootData = (JsonObject)root["data"];
+                    JsonArray rootChildren = (JsonArray)rootData["children"];
+
+                    var list = new List<RedditPost>();
+                    foreach (object obj in rootChildren)
+                    {
+                        JsonObject child = (JsonObject)obj;
+                        JsonObject data = (JsonObject)child["data"];
+
+                        var post = createPost(data);
+                        if (post != null)
+                            list.Add(post);
+                    }
+                    return list;
                 }
-                return list;
+            }
+        }
+
+        public static string GetAnnouncement()
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format(ANNOUNCEMENT_URL, ModInfo.Version));
+            request.Method = WebRequestMethods.Http.Get;
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            {
+                if (response.StatusCode != HttpStatusCode.OK)
+                    return null;
+
+                using (var sr = new StreamReader(response.GetResponseStream()))
+                {
+                    return sr.ReadLine();
+                }
             }
         }
 

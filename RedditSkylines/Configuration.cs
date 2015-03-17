@@ -12,12 +12,14 @@ namespace RedditClient
         private const string TIMER_KEY = "updateFrequency";
         private const string NOSOUND_KEY = "noSound";
         private const string FILTER_MESSAGES_KEY = "filterMessages";
+        private const string LAST_ANNOUNCEMENT = "lastAnnouncementId";
 
         public static List<string> Subreddits;
         public static int TimerInSeconds = 300;
         public static int NoSound = 0;
 
         public static int FilterMessages = 0;
+        public static int LastAnnouncement = 0;
 
         private static string ConfigPath
         {
@@ -69,22 +71,32 @@ namespace RedditClient
                     }
                     else if (line.StartsWith(NOSOUND_KEY + "="))
                     {
-                        var time = line.Substring(NOSOUND_KEY.Length + 1);
+                        var sound = line.Substring(NOSOUND_KEY.Length + 1);
 
                         int newSound = -1;
-                        if (Int32.TryParse(time, out newSound) && (newSound >= 0 || newSound <= 1))
+                        if (Int32.TryParse(sound, out newSound) && (newSound >= 0 || newSound <= 1))
                         {
                             NoSound = newSound;
                         }
                     }
                     else if(line.StartsWith(FILTER_MESSAGES_KEY + "="))
                     {
-                        var time = line.Substring(FILTER_MESSAGES_KEY.Length + 1);
+                        var filter = line.Substring(FILTER_MESSAGES_KEY.Length + 1);
 
                         int newVal = -1;
-                        if (Int32.TryParse(time, out newVal) && (newVal >= 0 || newVal <= 2))
+                        if (Int32.TryParse(filter, out newVal) && (newVal >= 0 || newVal <= 2))
                         {
                             FilterMessages = newVal;
+                        }
+                    }
+                    else if(line.StartsWith(LAST_ANNOUNCEMENT + "="))
+                    {
+                        var announcement = line.Substring(LAST_ANNOUNCEMENT.Length + 1);
+
+                        int newVal = 0;
+                        if (Int32.TryParse(announcement, out newVal))
+                        {
+                            LastAnnouncement = newVal;
                         }
                     }
 
@@ -118,38 +130,46 @@ namespace RedditClient
                 TimerInSeconds = 300;
                 NoSound = 0;
                 Subreddits = DefaultSubreddits;
+                LastAnnouncement = 0;
 
-                using (StreamWriter sw = new StreamWriter(ConfigPath))
-                {
-                    sw.WriteLine("# Reddit for Chirpy");
-                    sw.WriteLine("# https://github.com/mabako/reddit-for-city-skylines/wiki/Configuration");
-                    sw.WriteLine();
-
-                    sw.WriteLine("# How often should new messages be displayed?");
-                    sw.WriteLine("# Default: 300 (which is 5 minutes)");
-                    sw.WriteLine("{0}={1}", TIMER_KEY, TimerInSeconds);
-                    sw.WriteLine();
-
-                    sw.WriteLine("# Set this to 1 to disable chirping sounds.");
-                    sw.WriteLine("{0}={1}", NOSOUND_KEY, NoSound);
-
-                    sw.WriteLine();
-                    sw.WriteLine("# One subreddit per line");
-
-                    foreach (string subreddit in Subreddits)
-                        sw.WriteLine("{0}", subreddit);
-
-                    sw.WriteLine();
-                    sw.WriteLine("# Multireddit example (remove the '#' to use)");
-                    sw.WriteLine("# /user/ccaatt/m/chirps/new");
-
-                }
+                SaveConfig(true);
             }
         }
 
-        private static void SaveConfig()
+        internal static void SaveConfig(bool defaultConfig)
         {
-            
+            using (StreamWriter sw = new StreamWriter(ConfigPath))
+            {
+                sw.WriteLine("# Reddit for Chirpy");
+                sw.WriteLine("# https://github.com/mabako/reddit-for-city-skylines/wiki/Configuration");
+                sw.WriteLine();
+
+                sw.WriteLine("# How often should new messages be displayed?");
+                sw.WriteLine("# Default: 300 (which is 5 minutes)");
+                sw.WriteLine("{0}={1}", TIMER_KEY, TimerInSeconds);
+                sw.WriteLine();
+
+                sw.WriteLine("# Set this to 1 to disable chirping sounds.");
+                sw.WriteLine("{0}={1}", NOSOUND_KEY, NoSound);
+
+                sw.WriteLine();
+                sw.WriteLine("# One subreddit per line");
+
+                foreach (string subreddit in Subreddits)
+                    sw.WriteLine("{0}", subreddit);
+
+                if (defaultConfig)
+                {
+                    sw.WriteLine();
+                    sw.WriteLine("# Multireddit example (remove the '#' to use)");
+                    sw.WriteLine("# /user/ccaatt/m/chirps/new");
+                }
+
+                sw.WriteLine();
+                sw.WriteLine("# INTERNAL CONFIG");
+                sw.WriteLine("# Make sure to show announcements only once.");
+                sw.WriteLine("{0}={1}", LAST_ANNOUNCEMENT, LastAnnouncement);
+            }
         }
         
         private static List<string> DefaultSubreddits

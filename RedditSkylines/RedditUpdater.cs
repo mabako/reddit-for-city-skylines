@@ -21,6 +21,7 @@ namespace RedditClient
         private Dictionary<string, Queue<string>> lastPostIds = new Dictionary<string, Queue<string>>();
 
         private AudioClip messageSound = null;
+        private bool checkedAnnouncement = false;
 
         private CitizenMessage lastCitizenMessage = null;
 
@@ -81,6 +82,10 @@ namespace RedditClient
             if (IsPaused)
                 return;
 
+            // Possibly important messages
+            if (CheckAnnouncement())
+                return;
+
             // Pick a subreddit at random
             string subreddit = Configuration.Subreddits[new System.Random().Next(Configuration.Subreddits.Count)];
             try
@@ -107,6 +112,36 @@ namespace RedditClient
             {
                 DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("[Reddit {0}] {1}: {2}", subreddit, e.GetType().ToString(), e.Message)); 
             }
+        }
+
+        private bool CheckAnnouncement()
+        {
+            if (checkedAnnouncement)
+                return false;
+
+            checkedAnnouncement = true;
+
+            try
+            {
+                string announcement = TinyWeb.GetAnnouncement();
+                if (announcement != null && announcement.Length > 2)
+                {
+                    announcement = announcement.Trim();
+
+                    if (Configuration.LastAnnouncement == announcement.GetHashCode())
+                        return false;
+
+                    Configuration.LastAnnouncement = announcement.GetHashCode();
+                    Configuration.SaveConfig(false);
+
+                    AddMessage(new Message("Reddit for Chirpy", "Update", announcement));
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+            return false;
         }
 
         private void AddMessage(Message m)

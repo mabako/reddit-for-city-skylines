@@ -18,5 +18,10 @@ namespace RedditClient
         {
             get { return "Reddit for Chirpy"; }
         }
+
+        public static int Version
+        {
+            get { return 6; }
+        }
     }
 }
