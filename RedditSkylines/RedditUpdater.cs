@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Timers;
 using UnityEngine;
 
@@ -17,7 +18,7 @@ namespace RedditClient
         public const int MAX_REDDIT_POSTS_PER_SUBREDDIT = 5;
         public const int MAX_CACHED_REDDIT_POSTS_PER_SUBREDDIT = 50;
 
-        private Timer timer = new Timer();
+        private System.Timers.Timer timer = new System.Timers.Timer();
         private Dictionary<string, Queue<string>> lastPostIds = new Dictionary<string, Queue<string>>();
 
         private AudioClip messageSound = null;
@@ -105,7 +106,7 @@ namespace RedditClient
                     // Find the first one we haven't shown yet
                     if (!lastPostId.Contains(newestPost.id))
                     {
-                        AddMessage(new Message(newestPost.author, newestPost.subreddit, newestPost.title));
+                        AddMessage(new Message(newestPost.author, newestPost.subreddit, newestPost.title, LookupOrRenameCitizenID(newestPost.author)));
                         lastPostIds[subreddit].Enqueue(newestPost.id);
                         return;
                     }
@@ -115,6 +116,63 @@ namespace RedditClient
             {
                 DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("[Reddit {0}] {1}: {2}", subreddit, e.GetType().ToString(), e.Message)); 
             }
+        }
+
+        private uint LookupOrRenameCitizenID(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return 0u;
+
+            try
+            {
+                // use the shared lock for this
+                object L = GetPrivateVariable<object>(InstanceManager.instance, "m_lock");
+                do { }
+                while (!Monitor.TryEnter(L, SimulationManager.SYNCHRONIZE_TIMEOUT));
+                try
+                {
+                    // do we have someone called <name>?
+                    var dict = GetPrivateVariable<Dictionary<InstanceID, string>>(InstanceManager.instance, "m_names");
+
+                    foreach (var entry in dict)
+                    {
+                        if (name == entry.Value)
+                            return entry.Key.Citizen;
+                    }
+                }
+                finally
+                {
+                    Monitor.Exit(L);
+                }
+
+                InstanceID instanceId = InstanceID.Empty; ;
+                for (int i = 0; i < 500; ++i)
+                {
+                    uint id = MessageManager.instance.GetRandomResidentID();
+                    // What probably happens when we have no residents
+                    if (id == 0u)
+                        return 0u;
+
+                    instanceId.RawData = id;
+
+                    // doesn't exist
+                    if (CitizenManager.instance.m_citizens.m_buffer[id].m_flags == Citizen.Flags.None)
+                        continue;
+
+                    // has a name
+                    if ((CitizenManager.instance.m_citizens.m_buffer[id].m_flags & Citizen.Flags.CustomName) != Citizen.Flags.None)
+                        continue;
+
+                    // Found a random citizen without a name
+                    CitizenManager.instance.StartCoroutine(CitizenManager.instance.SetCitizenName(id, name));
+                    return id;
+                }
+            }
+            catch
+            {
+                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("[Reddit] Failed to pick random citizen name for {0}", name));
+            }
+            return 0u;
         }
 
         private bool CheckAnnouncement()
@@ -137,7 +195,7 @@ namespace RedditClient
                     Configuration.LastAnnouncement = announcement.GetHashCode();
                     Configuration.SaveConfig(false);
 
-                    AddMessage(new Message("Reddit for Chirpy", "Update", announcement));
+                    AddMessage(new Message("Reddit for Chirpy", "Update", announcement, 0));
                     return true;
                 }
             }
@@ -231,6 +289,18 @@ namespace RedditClient
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Resolve private assembly fields
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="fieldName"></param>
+        /// <returns></returns>
+        private T GetPrivateVariable<T>(object obj, string fieldName)
+        {
+            return (T) obj.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(obj);
         }
     }
 }

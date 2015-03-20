@@ -9,14 +9,17 @@ namespace RedditClient
     public class Message : MessageBase
     {
         private string m_author;
+        private uint m_citizenId;
         private string m_subreddit;
         private string m_text;
 
-        public Message(string author, string subreddit, string text)
+
+        public Message(string author, string subreddit, string text, uint citizenId)
         {
             m_author = author;
             m_subreddit = subreddit;
             m_text = text;
+            m_citizenId = citizenId;
 
             HashtagThis();
         }
@@ -74,7 +77,7 @@ namespace RedditClient
 
         public override uint GetSenderID()
         {
-            return 0;
+            return m_citizenId;
         }
 
         public override string GetSenderName()
@@ -103,6 +106,7 @@ namespace RedditClient
             s.WriteSharedString(m_author);
             s.WriteSharedString(m_subreddit);
             s.WriteSharedString(m_text);
+            s.WriteUInt32(m_citizenId);
         }
 
         public override void Deserialize(ColossalFramework.IO.DataSerializer s)
@@ -110,6 +114,7 @@ namespace RedditClient
             m_author = s.ReadSharedString();
             m_subreddit = s.ReadSharedString();
             m_text = s.ReadSharedString();
+            m_citizenId = s.ReadUInt32();
         }
 
         public override void AfterDeserialize(ColossalFramework.IO.DataSerializer s)
