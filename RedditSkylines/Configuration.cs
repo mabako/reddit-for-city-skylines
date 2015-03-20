@@ -10,13 +10,13 @@ namespace RedditClient
     class Configuration
     {
         private const string TIMER_KEY = "updateFrequency";
-        private const string NOSOUND_KEY = "noSound";
         private const string FILTER_MESSAGES_KEY = "filterMessages";
         private const string LAST_ANNOUNCEMENT = "lastAnnouncementId";
+        private const string ASSOCIATION_MODE = "associationMode";
 
         public static List<string> Subreddits;
         public static int TimerInSeconds = 300;
-        public static int NoSound = 0;
+        public static int AssociationMode = 0;
 
         public static int FilterMessages = 0;
         public static int LastAnnouncement = 0;
@@ -69,14 +69,14 @@ namespace RedditClient
                             TimerInSeconds = newTimer;
                         }
                     }
-                    else if (line.StartsWith(NOSOUND_KEY + "="))
+                    else if (line.StartsWith(ASSOCIATION_MODE + "="))
                     {
-                        var sound = line.Substring(NOSOUND_KEY.Length + 1);
+                        var sound = line.Substring(ASSOCIATION_MODE.Length + 1);
 
-                        int newSound = -1;
-                        if (Int32.TryParse(sound, out newSound) && (newSound >= 0 || newSound <= 1))
+                        int mode = -1;
+                        if (Int32.TryParse(sound, out mode) && (mode >= 0 || mode <= 2))
                         {
-                            NoSound = newSound;
+                            AssociationMode = mode;
                         }
                     }
                     else if(line.StartsWith(FILTER_MESSAGES_KEY + "="))
@@ -128,7 +128,7 @@ namespace RedditClient
                 DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Reddit: Config regenerated {0}: {1}", e.GetType().ToString(), e.Message));
 
                 TimerInSeconds = 300;
-                NoSound = 0;
+                AssociationMode = 0;
                 Subreddits = DefaultSubreddits;
                 LastAnnouncement = 0;
 
@@ -149,8 +149,11 @@ namespace RedditClient
                 sw.WriteLine("{0}={1}", TIMER_KEY, TimerInSeconds);
                 sw.WriteLine();
 
-                sw.WriteLine("# Set this to 1 to disable chirping sounds.");
-                sw.WriteLine("{0}={1}", NOSOUND_KEY, NoSound);
+                sw.WriteLine("# How should names be handled?");
+                sw.WriteLine("# Default: 0 (disabled)");
+                sw.WriteLine("# Set this to '1' to use CIM names instead of reddit usernames.");
+                sw.WriteLine("# Set this to '2' to permanently rename CIMs to reddit users.");
+                sw.WriteLine("{0}={1}", ASSOCIATION_MODE, AssociationMode);
 
                 sw.WriteLine();
                 sw.WriteLine("# One subreddit per line");

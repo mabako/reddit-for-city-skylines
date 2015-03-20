@@ -43,7 +43,7 @@ namespace RedditClient
                 Configuration.Load();
                 if (Configuration.Subreddits.Count >= 1)
                 {
-                    DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Going to show a new message from one of {0} subreddits every {1} seconds (NoSound = {2})", Configuration.Subreddits.Count, Configuration.TimerInSeconds, Configuration.NoSound));
+                    DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Going to show a new message from one of {0} subreddits every {1} seconds (AssociationMode = {2})", Configuration.Subreddits.Count, Configuration.TimerInSeconds, Configuration.AssociationMode));
 
                     foreach (string subreddit in Configuration.Subreddits)
                     {
@@ -55,9 +55,6 @@ namespace RedditClient
                     timer.Elapsed += new ElapsedEventHandler((sender, e) => UpdateRedditPosts());
                     timer.Interval = Configuration.TimerInSeconds * 1000;
                     timer.Start();
-
-                    if (Configuration.NoSound > 0)
-                        Singleton<ChirpPanel>.instance.m_NotificationSound = null;
                 }
                 else
                 {
@@ -76,13 +73,13 @@ namespace RedditClient
             timer.Dispose();
 
             ChirpPanel cp = ChirpPanel.instance;
-            DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("[Reddit] Releasing with {0}", cp));
             if(cp != null)
                 cp.m_NotificationSound = messageSound;
         }
 
         private void UpdateRedditPosts()
         {
+            DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("DoUpdate {0}", IsPaused));
             if (IsPaused)
                 return;
 
@@ -92,6 +89,8 @@ namespace RedditClient
 
             // Pick a subreddit at random
             string subreddit = Configuration.Subreddits[new System.Random().Next(Configuration.Subreddits.Count)];
+
+            DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("sr {0}", subreddit));
             try
             {
                 // Remove posts that are no longer checked against; plus some for possible deletions
@@ -106,7 +105,12 @@ namespace RedditClient
                     // Find the first one we haven't shown yet
                     if (!lastPostId.Contains(newestPost.id))
                     {
-                        AddMessage(new Message(newestPost.author, newestPost.subreddit, newestPost.title, LookupOrRenameCitizenID(newestPost.author)));
+                        DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, "Finding Person...");
+                        var data = LookupOrRenameCitizenID(newestPost.author);
+
+                        DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Person {0} {1}", data.ID, data.Name));
+                        
+                        AddMessage(new Message(data.Name, newestPost.subreddit, newestPost.title, data.ID));
                         lastPostIds[subreddit].Enqueue(newestPost.id);
                         return;
                     }
@@ -118,58 +122,76 @@ namespace RedditClient
             }
         }
 
-        private uint LookupOrRenameCitizenID(string name)
+        private CitizenInfo LookupOrRenameCitizenID(string name)
         {
-            if (string.IsNullOrEmpty(name))
-                return 0u;
-
-            try
+            if (!string.IsNullOrEmpty(name))
             {
-                // use the shared lock for this
-                object L = GetPrivateVariable<object>(InstanceManager.instance, "m_lock");
-                do { }
-                while (!Monitor.TryEnter(L, SimulationManager.SYNCHRONIZE_TIMEOUT));
-                try
+                if (Configuration.AssociationMode == 1)
                 {
-                    // do we have someone called <name>?
-                    var dict = GetPrivateVariable<Dictionary<InstanceID, string>>(InstanceManager.instance, "m_names");
-
-                    foreach (var entry in dict)
+                    // Use any citizen's name. Not necessarily consistent in and of itself, in that the same person may show up as multiple actual CIMs.
+                    uint id = MessageManager.instance.GetRandomResidentID();
+                    if (id != 0u)
+                        return new CitizenInfo { ID = id, Name = CitizenManager.instance.GetCitizenName(id) };
+                }
+                else if (Configuration.AssociationMode == 2)
+                {
+                    // Overwrite any CIM's name by their reddit username.
+                    // To be fair: this was the more interesting part.
+                    try
                     {
-                        if (name == entry.Value)
-                            return entry.Key.Citizen;
+                        // use the shared lock for this
+                        object L = GetPrivateVariable<object>(InstanceManager.instance, "m_lock");
+                        do { }
+                        while (!Monitor.TryEnter(L, SimulationManager.SYNCHRONIZE_TIMEOUT));
+                        try
+                        {
+                            // do we have someone called <name>?
+                            var dict = GetPrivateVariable<Dictionary<InstanceID, string>>(InstanceManager.instance, "m_names");
+
+                            foreach (var entry in dict)
+                            {
+                                if (name == entry.Value)
+                                    return new CitizenInfo { ID = entry.Key.Citizen, Name = name };
+                            }
+                        }
+                        finally
+                        {
+                            Monitor.Exit(L);
+                        }
+
+                        for (int i = 0; i < 500; ++i)
+                        {
+                            uint id = MessageManager.instance.GetRandomResidentID();
+                            // What probably happens when we have no residents
+                            if (id == 0u)
+                                break;
+
+                            // doesn't exist
+                            if (CitizenManager.instance.m_citizens.m_buffer[id].m_flags == Citizen.Flags.None)
+                                continue;
+
+                            // has a name
+                            if ((CitizenManager.instance.m_citizens.m_buffer[id].m_flags & Citizen.Flags.CustomName) != Citizen.Flags.None)
+                                continue;
+
+                            // Found a random citizen without a name
+                            CitizenManager.instance.StartCoroutine(CitizenManager.instance.SetCitizenName(id, name));
+                            return new CitizenInfo { ID = id, Name = name };
+                        }
+                        // either we've tried 500 CIMs which all were named (bad luck or too few people), or
+                        // we have no people at all.
+                    }
+                    catch
+                    {
+                        // not sure if this would happen often. Who knows.
+                        DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("[Reddit] Failed to pick random citizen name for {0}", name));
                     }
                 }
-                finally
-                {
-                    Monitor.Exit(L);
-                }
-
-                for (int i = 0; i < 500; ++i)
-                {
-                    uint id = MessageManager.instance.GetRandomResidentID();
-                    // What probably happens when we have no residents
-                    if (id == 0u)
-                        return 0u;
-
-                    // doesn't exist
-                    if (CitizenManager.instance.m_citizens.m_buffer[id].m_flags == Citizen.Flags.None)
-                        continue;
-
-                    // has a name
-                    if ((CitizenManager.instance.m_citizens.m_buffer[id].m_flags & Citizen.Flags.CustomName) != Citizen.Flags.None)
-                        continue;
-
-                    // Found a random citizen without a name
-                    CitizenManager.instance.StartCoroutine(CitizenManager.instance.SetCitizenName(id, name));
-                    return id;
-                }
             }
-            catch
-            {
-                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("[Reddit] Failed to pick random citizen name for {0}", name));
-            }
-            return 0u;
+
+            // Either we have no people, or we have some people but couldn't find anyone to use for our purposes,
+            // or we don't want people renamed.
+            return new CitizenInfo { Name = name };
         }
 
         private bool CheckAnnouncement()
@@ -274,8 +296,7 @@ namespace RedditClient
             {
                 if (container.GetChild(i).GetComponentInChildren<UILabel>().text.Equals(lastCitizenMessage.GetText()))
                 {
-                    if (Configuration.NoSound == 0)
-                        ChirpPanel.instance.m_NotificationSound = messageSound;
+                    ChirpPanel.instance.m_NotificationSound = messageSound;
 
                     UITemplateManager.RemoveInstance("ChirpTemplate", container.GetChild(i).GetComponent<UIPanel>());
                     MessageManager.instance.DeleteMessage(lastCitizenMessage);

@@ -51,6 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CitizenInfo.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="ModInfo.cs" />
