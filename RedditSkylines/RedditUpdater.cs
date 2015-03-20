@@ -145,15 +145,12 @@ namespace RedditClient
                     Monitor.Exit(L);
                 }
 
-                InstanceID instanceId = InstanceID.Empty; ;
                 for (int i = 0; i < 500; ++i)
                 {
                     uint id = MessageManager.instance.GetRandomResidentID();
                     // What probably happens when we have no residents
                     if (id == 0u)
                         return 0u;
-
-                    instanceId.RawData = id;
 
                     // doesn't exist
                     if (CitizenManager.instance.m_citizens.m_buffer[id].m_flags == Citizen.Flags.None)
