@@ -103,7 +103,7 @@ namespace RedditClient
                 foreach (RedditPost newestPost in newestPosts)
                 {
                     // Find the first one we haven't shown yet
-                    if (!lastPostId.Contains(newestPost.id))
+                    if (!lastPostId.Contains(newestPost.id) && !ShouldFilterPost(newestPost))
                     {
                         DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, "Finding Person...");
                         var data = LookupOrRenameCitizenID(newestPost.author);
@@ -230,6 +230,15 @@ namespace RedditClient
                 return;
 
             MessageManager.instance.QueueMessage(m);
+        }
+
+        private boolean ShouldFilterPost(RedditPost post)
+        {
+            // "Meta" posts.
+            if (post.title.ToLower().Trim().StartsWith("[meta]"))
+            {
+                return true;
+            }
         }
 
         public override void OnNewMessage(IChirperMessage message)
