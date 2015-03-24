@@ -232,12 +232,16 @@ namespace RedditClient
             MessageManager.instance.QueueMessage(m);
         }
 
-        private boolean ShouldFilterPost(RedditPost post)
+        private bool ShouldFilterPost(RedditPost post)
         {
             // "Meta" posts.
             if (post.title.ToLower().Trim().StartsWith("[meta]"))
             {
                 return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
