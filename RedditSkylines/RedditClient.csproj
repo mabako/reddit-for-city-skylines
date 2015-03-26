@@ -62,8 +62,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /y "$(TargetPath)" "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(SolutionName)"
-copy /y "$(SolutionDir)\LICENSE" "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(SolutionName)"</PostBuildEvent>
+    <PostBuildEvent>set CS_MOD_FOLDER=%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\
+set PROJECT_MOD_FOLDER=%25CS_MOD_FOLDER%25\$(SolutionName)\
+if not exist "%25PROJECT_MOD_FOLDER%25" mkdir "%25PROJECT_MOD_FOLDER%25"
+copy /y "$(TargetPath)" "%25PROJECT_MOD_FOLDER%25"
+copy /y "$(SolutionDir)\LICENSE" "%25PROJECT_MOD_FOLDER%25"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
