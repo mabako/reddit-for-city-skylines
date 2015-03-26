@@ -1,1 +1,1 @@
-Welcome to this #beta #update, CIMs now automatically named so you can ruin their life for shitty posts
+Welcome to Reddit v7; CIMs can now be named by changing "associationMode"
