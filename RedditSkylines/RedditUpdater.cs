@@ -90,7 +90,6 @@ namespace RedditClient
             // Pick a subreddit at random
             string subreddit = Configuration.Subreddits[new System.Random().Next(Configuration.Subreddits.Count)];
 
-            DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("sr {0}", subreddit));
             try
             {
                 // Remove posts that are no longer checked against; plus some for possible deletions
@@ -105,11 +104,8 @@ namespace RedditClient
                     // Find the first one we haven't shown yet
                     if (!lastPostId.Contains(newestPost.id) && !ShouldFilterPost(newestPost))
                     {
-                        DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, "Finding Person...");
                         var data = LookupOrRenameCitizenID(newestPost.author);
 
-                        DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Person {0} {1}", data.ID, data.Name));
-                        
                         AddMessage(new Message(data.Name, newestPost.subreddit, newestPost.title, data.ID));
                         lastPostIds[subreddit].Enqueue(newestPost.id);
                         return;
