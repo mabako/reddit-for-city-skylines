@@ -13,10 +13,12 @@ namespace RedditClient
         private const string FILTER_MESSAGES_KEY = "filterMessages";
         private const string LAST_ANNOUNCEMENT = "lastAnnouncementId";
         private const string ASSOCIATION_MODE = "associationMode";
+        private const string HASHTAG_MODE = "hashtags";
 
         public static List<string> Subreddits;
         public static int TimerInSeconds = 300;
         public static int AssociationMode = 0;
+        public static int Hashtags = 1;
 
         public static int FilterMessages = 0;
         public static int LastAnnouncement = 0;
@@ -79,6 +81,17 @@ namespace RedditClient
                             AssociationMode = mode;
                         }
                     }
+                    else if (line.StartsWith(HASHTAG_MODE + "="))
+                    {
+                        var sound = line.Substring(HASHTAG_MODE.Length + 1);
+
+                        int mode = -1;
+                        if (Int32.TryParse(sound, out mode) && (mode >= 0 || mode <= 1))
+                        {
+                            Hashtags = mode;
+                        }
+                    }
+                        
                     else if(line.StartsWith(FILTER_MESSAGES_KEY + "="))
                     {
                         var filter = line.Substring(FILTER_MESSAGES_KEY.Length + 1);
@@ -132,6 +145,7 @@ namespace RedditClient
                 FilterMessages = 0;
                 Subreddits = DefaultSubreddits;
                 LastAnnouncement = 0;
+                Hashtags = 1;
 
                 SaveConfig(true);
             }
@@ -169,13 +183,17 @@ namespace RedditClient
                     sw.WriteLine("# /user/ccaatt/m/chirps/new");
                 }
 
-
+                sw.WriteLine();
                 sw.WriteLine("# Filters some or all chirps made by your citizen if enabled");
                 sw.WriteLine("# Default: 0 (disabled)");
                 sw.WriteLine("# Set this to '1' to hide useless chirps");
                 sw.WriteLine("# Set this to '2' to hide all chirps");
                 sw.WriteLine("# This may break mod compatibility.");
                 sw.WriteLine("{0}={1}", FILTER_MESSAGES_KEY, FilterMessages);
+
+                sw.WriteLine();
+                sw.WriteLine("# Enable automated hashtags?");
+                sw.WriteLine("{0}={1}", HASHTAG_MODE, Hashtags);
 
                 sw.WriteLine();
                 sw.WriteLine("# INTERNAL CONFIG");

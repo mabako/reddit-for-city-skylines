@@ -20,7 +20,8 @@ namespace RedditClient
             m_text = text;
             m_citizenId = citizenId;
 
-            HashtagThis();
+            if(Configuration.Hashtags > 0)
+                HashtagThis();
         }
 
         private void HashtagThis()
