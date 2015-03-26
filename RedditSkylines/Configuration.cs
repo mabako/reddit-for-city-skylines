@@ -129,6 +129,7 @@ namespace RedditClient
 
                 TimerInSeconds = 300;
                 AssociationMode = 0;
+                FilterMessages = 0;
                 Subreddits = DefaultSubreddits;
                 LastAnnouncement = 0;
 
@@ -167,6 +168,14 @@ namespace RedditClient
                     sw.WriteLine("# Multireddit example (remove the '#' to use)");
                     sw.WriteLine("# /user/ccaatt/m/chirps/new");
                 }
+
+
+                sw.WriteLine("# Filters some or all chirps made by your citizen if enabled");
+                sw.WriteLine("# Default: 0 (disabled)");
+                sw.WriteLine("# Set this to '1' to hide useless chirps");
+                sw.WriteLine("# Set this to '2' to hide all chirps");
+                sw.WriteLine("# This may break mod compatibility.");
+                sw.WriteLine("{0}={1}", FILTER_MESSAGES_KEY, FilterMessages);
 
                 sw.WriteLine();
                 sw.WriteLine("# INTERNAL CONFIG");
