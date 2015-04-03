@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
 
 namespace RedditClient
 {
@@ -20,7 +18,7 @@ namespace RedditClient
             request.Method = WebRequestMethods.Http.Get;
             request.Accept = "text/json";
 
-            using (HttpWebResponse response = (HttpWebResponse) request.GetResponse())
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
             {
                 if (response.StatusCode != HttpStatusCode.OK)
                     return null;
@@ -69,14 +67,13 @@ namespace RedditClient
         {
             // Any karma at all?
             var karma = data["score"];
-            if(karma is Int32)
-                if((Int32)karma <= 0)
+            if (karma is Int32)
+                if ((Int32)karma <= 0)
                     return null;
-
 
             // Sticky post?
             var sticky = data["stickied"];
-            if(sticky is Boolean)
+            if (sticky is Boolean)
                 if ((Boolean)sticky == true)
                     return null;
 

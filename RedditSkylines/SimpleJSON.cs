@@ -54,14 +54,18 @@ using System;
 using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
+
 #if !SIMPLE_JSON_NO_LINQ_EXPRESSION
 using System.Linq.Expressions;
 #endif
+
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+
 #if SIMPLE_JSON_DYNAMIC
 using System.Dynamic;
 #endif
+
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -87,15 +91,20 @@ namespace SimpleJson
  class JsonArray : List<object>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonArray"/> class. 
+        /// Initializes a new instance of the <see cref="JsonArray"/> class.
         /// </summary>
-        public JsonArray() { }
+        public JsonArray()
+        {
+        }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonArray"/> class. 
+        /// Initializes a new instance of the <see cref="JsonArray"/> class.
         /// </summary>
         /// <param name="capacity">The capacity of the json array.</param>
-        public JsonArray(int capacity) : base(capacity) { }
+        public JsonArray(int capacity)
+            : base(capacity)
+        {
+        }
 
         /// <summary>
         /// The json representation of the array.
@@ -489,7 +498,7 @@ namespace SimpleJson
     /// <summary>
     /// This class encodes and decodes JSON strings.
     /// Spec. details, see http://www.json.org/
-    /// 
+    ///
     /// JSON uses Arrays and Objects. These correspond here to the datatypes JsonArray(IList&lt;object>) and JsonObject(IDictionary&lt;string,object>).
     /// All numbers are parsed to doubles.
     /// </summary>
@@ -671,7 +680,7 @@ namespace SimpleJson
             return sb.ToString();
         }
 
-        static IDictionary<string, object> ParseObject(char[] json, ref int index, ref bool success)
+        private static IDictionary<string, object> ParseObject(char[] json, ref int index, ref bool success)
         {
             IDictionary<string, object> table = new JsonObject();
             int token;
@@ -724,7 +733,7 @@ namespace SimpleJson
             return table;
         }
 
-        static JsonArray ParseArray(char[] json, ref int index, ref bool success)
+        private static JsonArray ParseArray(char[] json, ref int index, ref bool success)
         {
             JsonArray array = new JsonArray();
 
@@ -758,27 +767,34 @@ namespace SimpleJson
             return array;
         }
 
-        static object ParseValue(char[] json, ref int index, ref bool success)
+        private static object ParseValue(char[] json, ref int index, ref bool success)
         {
             switch (LookAhead(json, index))
             {
                 case TOKEN_STRING:
                     return ParseString(json, ref index, ref success);
+
                 case TOKEN_NUMBER:
                     return ParseNumber(json, ref index, ref success);
+
                 case TOKEN_CURLY_OPEN:
                     return ParseObject(json, ref index, ref success);
+
                 case TOKEN_SQUARED_OPEN:
                     return ParseArray(json, ref index, ref success);
+
                 case TOKEN_TRUE:
                     NextToken(json, ref index);
                     return true;
+
                 case TOKEN_FALSE:
                     NextToken(json, ref index);
                     return false;
+
                 case TOKEN_NULL:
                     NextToken(json, ref index);
                     return null;
+
                 case TOKEN_NONE:
                     break;
             }
@@ -786,7 +802,7 @@ namespace SimpleJson
             return null;
         }
 
-        static string ParseString(char[] json, ref int index, ref bool success)
+        private static string ParseString(char[] json, ref int index, ref bool success)
         {
             StringBuilder s = new StringBuilder(BUILDER_CAPACITY);
             char c;
@@ -892,7 +908,7 @@ namespace SimpleJson
             return new string(new char[] { (char)((utf32 >> 10) + 0xD800), (char)(utf32 % 0x0400 + 0xDC00) });
         }
 
-        static object ParseNumber(char[] json, ref int index, ref bool success)
+        private static object ParseNumber(char[] json, ref int index, ref bool success)
         {
             EatWhitespace(json, ref index);
             int lastIndex = GetLastIndexOfNumber(json, index);
@@ -915,7 +931,7 @@ namespace SimpleJson
             return returnNumber;
         }
 
-        static int GetLastIndexOfNumber(char[] json, int index)
+        private static int GetLastIndexOfNumber(char[] json, int index)
         {
             int lastIndex;
             for (lastIndex = index; lastIndex < json.Length; lastIndex++)
@@ -923,20 +939,20 @@ namespace SimpleJson
             return lastIndex - 1;
         }
 
-        static void EatWhitespace(char[] json, ref int index)
+        private static void EatWhitespace(char[] json, ref int index)
         {
             for (; index < json.Length; index++)
                 if (" \t\n\r\b\f".IndexOf(json[index]) == -1) break;
         }
 
-        static int LookAhead(char[] json, int index)
+        private static int LookAhead(char[] json, int index)
         {
             int saveIndex = index;
             return NextToken(json, ref saveIndex);
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
-        static int NextToken(char[] json, ref int index)
+        private static int NextToken(char[] json, ref int index)
         {
             EatWhitespace(json, ref index);
             if (index == json.Length)
@@ -947,16 +963,22 @@ namespace SimpleJson
             {
                 case '{':
                     return TOKEN_CURLY_OPEN;
+
                 case '}':
                     return TOKEN_CURLY_CLOSE;
+
                 case '[':
                     return TOKEN_SQUARED_OPEN;
+
                 case ']':
                     return TOKEN_SQUARED_CLOSE;
+
                 case ',':
                     return TOKEN_COMMA;
+
                 case '"':
                     return TOKEN_STRING;
+
                 case '0':
                 case '1':
                 case '2':
@@ -969,6 +991,7 @@ namespace SimpleJson
                 case '9':
                 case '-':
                     return TOKEN_NUMBER;
+
                 case ':':
                     return TOKEN_COLON;
             }
@@ -1004,7 +1027,7 @@ namespace SimpleJson
             return TOKEN_NONE;
         }
 
-        static bool SerializeValue(IJsonSerializerStrategy jsonSerializerStrategy, object value, StringBuilder builder)
+        private static bool SerializeValue(IJsonSerializerStrategy jsonSerializerStrategy, object value, StringBuilder builder)
         {
             bool success = true;
             string stringValue = value as string;
@@ -1048,7 +1071,7 @@ namespace SimpleJson
             return success;
         }
 
-        static bool SerializeObject(IJsonSerializerStrategy jsonSerializerStrategy, IEnumerable keys, IEnumerable values, StringBuilder builder)
+        private static bool SerializeObject(IJsonSerializerStrategy jsonSerializerStrategy, IEnumerable keys, IEnumerable values, StringBuilder builder)
         {
             builder.Append("{");
             IEnumerator ke = keys.GetEnumerator();
@@ -1074,7 +1097,7 @@ namespace SimpleJson
             return true;
         }
 
-        static bool SerializeArray(IJsonSerializerStrategy jsonSerializerStrategy, IEnumerable anArray, StringBuilder builder)
+        private static bool SerializeArray(IJsonSerializerStrategy jsonSerializerStrategy, IEnumerable anArray, StringBuilder builder)
         {
             builder.Append("[");
             bool first = true;
@@ -1090,7 +1113,7 @@ namespace SimpleJson
             return true;
         }
 
-        static bool SerializeString(string aString, StringBuilder builder)
+        private static bool SerializeString(string aString, StringBuilder builder)
         {
             // Happy path if there's nothing to be escaped. IndexOfAny is highly optimized (and unmanaged)
             if (aString.IndexOfAny(EscapeCharacters) == -1)
@@ -1139,7 +1162,7 @@ namespace SimpleJson
             return true;
         }
 
-        static bool SerializeNumber(object number, StringBuilder builder)
+        private static bool SerializeNumber(object number, StringBuilder builder)
         {
             if (number is long)
                 builder.Append(((long)number).ToString(CultureInfo.InvariantCulture));
@@ -1162,7 +1185,7 @@ namespace SimpleJson
         /// Determines if a given object is numeric in any way
         /// (can be integer, double, null, etc).
         /// </summary>
-        static bool IsNumeric(object value)
+        private static bool IsNumeric(object value)
         {
             if (value is sbyte) return true;
             if (value is byte) return true;
@@ -1179,6 +1202,7 @@ namespace SimpleJson
         }
 
         private static IJsonSerializerStrategy _currentJsonSerializerStrategy;
+
         public static IJsonSerializerStrategy CurrentJsonSerializerStrategy
         {
             get
@@ -1199,6 +1223,7 @@ namespace SimpleJson
         }
 
         private static PocoJsonSerializerStrategy _pocoJsonSerializerStrategy;
+
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public static PocoJsonSerializerStrategy PocoJsonSerializerStrategy
         {
@@ -1233,6 +1258,7 @@ namespace SimpleJson
     {
         [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate", Justification = "Need to support .NET 2")]
         bool TrySerializeNonPrimitiveObject(object input, out object output);
+
         object DeserializeObject(object value, Type type);
     }
 
@@ -1494,6 +1520,7 @@ namespace SimpleJson
             }
             return returnValue;
         }
+
         [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate", Justification = "Need to support .NET 2")]
         protected virtual bool TrySerializeUnknownTypes(object input, out object output)
         {
@@ -1608,7 +1635,9 @@ namespace SimpleJson
             private static readonly object[] EmptyObjects = new object[] { };
 
             public delegate object GetDelegate(object source);
+
             public delegate void SetDelegate(object source, object value);
+
             public delegate object ConstructorDelegate(params object[] args);
 
             public delegate TValue ThreadSafeDictionaryValueFactory<TKey, TValue>(TKey key);
@@ -1619,10 +1648,12 @@ namespace SimpleJson
                 return type.GetTypeInfo();
             }
 #else
+
             public static Type GetTypeInfo(Type type)
             {
                 return type;
             }
+
 #endif
 
             public static Attribute GetAttribute(MemberInfo info, Type type)
@@ -1659,7 +1690,6 @@ namespace SimpleJson
 
             public static Attribute GetAttribute(Type objectType, Type attributeType)
             {
-
 #if SIMPLE_JSON_TYPEINFO
                 if (objectType == null || attributeType == null || !objectType.GetTypeInfo().IsDefined(attributeType))
                     return null;
@@ -2118,10 +2148,10 @@ namespace SimpleJson
                     return _dictionary.GetEnumerator();
                 }
             }
-
         }
     }
 }
+
 // ReSharper restore LoopCanBeConvertedToQuery
 // ReSharper restore RedundantExplicitArrayCreation
 // ReSharper restore SuggestUseVarKeywordEvident

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace RedditClient
 {
@@ -12,7 +9,6 @@ namespace RedditClient
         private string m_subreddit;
         private string m_text;
 
-
         public Message(string author, string subreddit, string text, uint citizenId)
         {
             m_author = author;
@@ -20,7 +16,7 @@ namespace RedditClient
             m_text = text;
             m_citizenId = citizenId;
 
-            if(Configuration.Hashtags > 0)
+            if (Configuration.Hashtags > 0)
                 HashtagThis();
         }
 
@@ -35,17 +31,17 @@ namespace RedditClient
 
             // Get the longest, non-hashtagged word
             string longestWord = "";
-            foreach(string str in split)
+            foreach (string str in split)
             {
                 if (!str.StartsWith("#"))
                 {
                     int length = str.Length;
-                    if(length == 0)
+                    if (length == 0)
                         continue;
 
                     if (!Char.IsLetter(str[0]))
                         continue;
-                    
+
                     // UPPERCASE WORDS ARE MORE IMPORTANT
                     if (Char.IsUpper(str[0]))
                         length += 2;
@@ -70,7 +66,7 @@ namespace RedditClient
                     split[i] = "#" + split[i];
                 }
             }
-            
+
             m_text = string.Join(" ", split);
             HashtagThis();
         }

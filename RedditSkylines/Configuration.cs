@@ -2,12 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace RedditClient
 {
-    class Configuration
+    internal class Configuration
     {
         private const string TIMER_KEY = "updateFrequency";
         private const string FILTER_MESSAGES_KEY = "filterMessages";
@@ -33,7 +32,7 @@ namespace RedditClient
                     Directory.CreateDirectory(path);
 
                 path += "reddit-for-chirpy.txt";
-                
+
                 return path;
             }
         }
@@ -51,7 +50,7 @@ namespace RedditClient
                 Subreddits = new List<string>();
                 bool requestSave = false;
 
-                for (int i = 0; i < configLines.Length; ++ i)
+                for (int i = 0; i < configLines.Length; ++i)
                 {
                     // Remove unnecessary spaces
                     var line = configLines[i].Trim();
@@ -91,8 +90,7 @@ namespace RedditClient
                             Hashtags = mode;
                         }
                     }
-                        
-                    else if(line.StartsWith(FILTER_MESSAGES_KEY + "="))
+                    else if (line.StartsWith(FILTER_MESSAGES_KEY + "="))
                     {
                         var filter = line.Substring(FILTER_MESSAGES_KEY.Length + 1);
 
@@ -102,7 +100,7 @@ namespace RedditClient
                             FilterMessages = newVal;
                         }
                     }
-                    else if(line.StartsWith(LAST_ANNOUNCEMENT + "="))
+                    else if (line.StartsWith(LAST_ANNOUNCEMENT + "="))
                     {
                         var announcement = line.Substring(LAST_ANNOUNCEMENT.Length + 1);
 
@@ -201,7 +199,7 @@ namespace RedditClient
                 sw.WriteLine("{0}={1}", LAST_ANNOUNCEMENT, LastAnnouncement);
             }
         }
-        
+
         private static List<string> DefaultSubreddits
         {
             get
