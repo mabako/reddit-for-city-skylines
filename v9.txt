@@ -1,0 +1,1 @@
+You can now click reddit posts! Huzzah! Check the Workshop -> Wiki for configuration.
