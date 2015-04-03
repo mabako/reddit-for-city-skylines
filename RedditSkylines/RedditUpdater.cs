@@ -47,7 +47,7 @@ namespace RedditClient
 
                     foreach (string subreddit in Configuration.Subreddits)
                     {
-                        if(!lastPostIds.ContainsKey(subreddit))
+                        if (!lastPostIds.ContainsKey(subreddit))
                             lastPostIds.Add(subreddit, new Queue<string>());
                     }
 
@@ -61,7 +61,7 @@ namespace RedditClient
                     DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, "No subreddits configured.");
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Error, string.Format("[Reddit] {0}: {1}", e.GetType(), e.Message));
             }
@@ -73,13 +73,12 @@ namespace RedditClient
             timer.Dispose();
 
             ChirpPanel cp = ChirpPanel.instance;
-            if(cp != null)
+            if (cp != null)
                 cp.m_NotificationSound = messageSound;
         }
 
         private void UpdateRedditPosts()
         {
-            DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("DoUpdate {0}", IsPaused));
             if (IsPaused)
                 return;
 
@@ -112,9 +111,9 @@ namespace RedditClient
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("[Reddit {0}] {1}: {2}", subreddit, e.GetType().ToString(), e.Message)); 
+                // DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("[Reddit {0}] {1}: {2}", subreddit, e.GetType().ToString(), e.Message));
             }
         }
 
@@ -180,7 +179,7 @@ namespace RedditClient
                     catch
                     {
                         // not sure if this would happen often. Who knows.
-                        DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("[Reddit] Failed to pick random citizen name for {0}", name));
+                        // DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("[Reddit] Failed to pick random citizen name for {0}", name));
                     }
                 }
             }
@@ -246,9 +245,7 @@ namespace RedditClient
             CitizenMessage cm = message as CitizenMessage;
             if (cm != null)
             {
-#if false
-                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Reddit | CitizenMessage {0} {1}", cm.m_messageID, cm.m_keyID));
-#endif
+                // DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Reddit | CitizenMessage {0} {1}", cm.m_messageID, cm.m_keyID));
                 if (ShouldFilter(cm.m_messageID))
                 {
                     ChirpPanel.instance.m_NotificationSound = null;
@@ -264,7 +261,7 @@ namespace RedditClient
             if (Configuration.FilterMessages == 0)
                 return false;
 
-            switch(p)
+            switch (p)
             {
                 case LocaleID.CHIRP_ASSISTIVE_TECHNOLOGIES:
                 case LocaleID.CHIRP_ATTRACTIVE_CITY:
@@ -289,6 +286,7 @@ namespace RedditClient
                 case LocaleID.CHIRP_RANDOM:
                 case LocaleID.CHIRP_STUDENT_LODGING:
                     return true;
+
                 default:
                     return false;
             }
@@ -327,7 +325,7 @@ namespace RedditClient
         /// <returns></returns>
         private T GetPrivateVariable<T>(object obj, string fieldName)
         {
-            return (T) obj.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(obj);
+            return (T)obj.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(obj);
         }
     }
 }
