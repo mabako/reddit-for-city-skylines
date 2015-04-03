@@ -9,12 +9,16 @@ namespace RedditClient
         private string m_subreddit;
         private string m_text;
 
-        public Message(string author, string subreddit, string text, uint citizenId)
+        [NonSerialized]
+        private string m_postId;
+
+        public Message(string author, string subreddit, string text, uint citizenId, string postId)
         {
             m_author = author;
             m_subreddit = subreddit;
             m_text = text;
             m_citizenId = citizenId;
+            m_postId = postId;
 
             if (Configuration.Hashtags > 0)
                 HashtagThis();
@@ -115,6 +119,11 @@ namespace RedditClient
 
         public override void AfterDeserialize(ColossalFramework.IO.DataSerializer s)
         {
+        }
+
+        public string GetPostID()
+        {
+            return m_postId;
         }
     }
 }

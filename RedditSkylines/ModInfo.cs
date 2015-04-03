@@ -16,7 +16,7 @@ namespace RedditClient
 
         public static int Version
         {
-            get { return 7; }
+            get { return 9; }
         }
     }
 }

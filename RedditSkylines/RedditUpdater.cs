@@ -1,4 +1,5 @@
 ﻿using ColossalFramework;
+using ColossalFramework.Steamworks;
 using ColossalFramework.UI;
 using ICities;
 using System;
@@ -22,6 +23,7 @@ namespace RedditClient
         private bool checkedAnnouncement = false;
 
         private CitizenMessage lastCitizenMessage = null;
+        public Message lastRedditMessage = null;
 
         private bool IsPaused
         {
@@ -102,7 +104,7 @@ namespace RedditClient
                     {
                         var data = LookupOrRenameCitizenID(newestPost.author);
 
-                        AddMessage(new Message(data.Name, newestPost.subreddit, newestPost.title, data.ID));
+                        AddMessage(new Message(data.Name, newestPost.subreddit, newestPost.title, data.ID, newestPost.id));
                         lastPostIds[subreddit].Enqueue(newestPost.id);
                         return;
                     }
@@ -206,7 +208,7 @@ namespace RedditClient
                     Configuration.LastAnnouncement = announcement.GetHashCode();
                     Configuration.SaveConfig(false);
 
-                    AddMessage(new Message("Reddit for Chirpy", "Update", announcement, 0));
+                    AddMessage(new Message("Reddit for Chirpy", "Update", announcement, 0, "2z87if"));
                     return true;
                 }
             }
@@ -247,6 +249,42 @@ namespace RedditClient
                 {
                     ChirpPanel.instance.m_NotificationSound = null;
                     lastCitizenMessage = cm;
+                }
+            }
+            else if (message is Message)
+            {
+                lastRedditMessage = message as Message;
+            }
+        }
+
+        private void ClickRedditChirp(UIComponent component, UIMouseEventParameter eventParam)
+        {
+            string postId = component.stringUserData;
+            if (!string.IsNullOrEmpty(postId) && UIMouseButtonExtensions.IsFlagSet(eventParam.buttons, UIMouseButton.Left))
+            {
+                // Other mouse flags, like .Right seem to have no effect anyway.
+                string url = string.Format("https://reddit.com/{0}", postId);
+
+                switch (Configuration.ClickBehaviour)
+                {
+                    case 0:
+                        // Open Steam Overlay
+                        Steam.ActivateGameOverlayToWebPage(url);
+                        break;
+
+                    case 1:
+                        // Copy to Clipboard
+                        Clipboard.text = url;
+                        break;
+
+                    case 2:
+                        // Open system browser
+                        Application.OpenURL(url);
+                        break;
+
+                    case 3:
+                        // Nothing
+                        break;
                 }
             }
         }
@@ -291,24 +329,38 @@ namespace RedditClient
 
         public override void OnUpdate()
         {
-            if (lastCitizenMessage == null)
+            if (lastCitizenMessage == null && lastRedditMessage == null)
                 return;
 
             // This code is roughly based on the work by Juuso "Zuppi" Hietala.
             var container = ChirpPanel.instance.transform.FindChild("Chirps").FindChild("Clipper").FindChild("Container").gameObject.transform;
             for (int i = 0; i < container.childCount; ++i)
             {
-                if (container.GetChild(i).GetComponentInChildren<UILabel>().text.Equals(lastCitizenMessage.GetText()))
+                var elem = container.GetChild(i);
+                var label = elem.GetComponentInChildren<UILabel>();
+                if (lastRedditMessage != null)
                 {
-                    ChirpPanel.instance.m_NotificationSound = messageSound;
+                    if (label.text.Equals(lastRedditMessage.GetText()) && string.IsNullOrEmpty(label.stringUserData))
+                    {
+                        label.stringUserData = lastRedditMessage.GetPostID();
+                        label.eventClick += ClickRedditChirp;
 
-                    UITemplateManager.RemoveInstance("ChirpTemplate", container.GetChild(i).GetComponent<UIPanel>());
-                    MessageManager.instance.DeleteMessage(lastCitizenMessage);
-                    lastCitizenMessage = null;
+                        lastRedditMessage = null;
+                    }
+                }
 
-                    ChirpPanel.instance.Collapse();
+                if (lastCitizenMessage != null)
+                {
+                    if (label.text.Equals(lastCitizenMessage.GetText()))
+                    {
+                        ChirpPanel.instance.m_NotificationSound = messageSound;
 
-                    break;
+                        UITemplateManager.RemoveInstance("ChirpTemplate", elem.GetComponent<UIPanel>());
+                        MessageManager.instance.DeleteMessage(lastCitizenMessage);
+                        lastCitizenMessage = null;
+
+                        ChirpPanel.instance.Collapse();
+                    }
                 }
             }
         }

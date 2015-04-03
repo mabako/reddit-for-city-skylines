@@ -13,11 +13,13 @@ namespace RedditClient
         private const string LAST_ANNOUNCEMENT = "lastAnnouncementId";
         private const string ASSOCIATION_MODE = "associationMode";
         private const string HASHTAG_MODE = "hashtags";
+        private const string CLICK_BEHAVIOUR = "clickBehaviour";
 
         public static List<string> Subreddits;
         public static int TimerInSeconds = 300;
         public static int AssociationMode = 0;
         public static int Hashtags = 1;
+        public static int ClickBehaviour = 0;
 
         public static int FilterMessages = 0;
         public static int LastAnnouncement = 0;
@@ -110,6 +112,16 @@ namespace RedditClient
                             LastAnnouncement = newVal;
                         }
                     }
+                    else if (line.StartsWith(CLICK_BEHAVIOUR + "="))
+                    {
+                        var clickb = line.Substring(CLICK_BEHAVIOUR.Length + 1);
+
+                        int newVal = 0;
+                        if (Int32.TryParse(clickb, out newVal) && (newVal >= 0 || newVal <= 3))
+                        {
+                            ClickBehaviour = newVal;
+                        }
+                    }
 
                     // Just reddit names, presumably
                     else if (line.Length > 1 && r.IsMatch(line))
@@ -192,6 +204,14 @@ namespace RedditClient
                 sw.WriteLine();
                 sw.WriteLine("# Enable automated hashtags?");
                 sw.WriteLine("{0}={1}", HASHTAG_MODE, Hashtags);
+
+                sw.WriteLine();
+                sw.WriteLine("# What should happen when you click on reddit chirps?");
+                sw.WriteLine("# Default: 0 (open Steam Overlay)");
+                sw.WriteLine("# Set this to '1' to copy to clipboard");
+                sw.WriteLine("# Set this to '2' to open your system browser");
+                sw.WriteLine("# Set this to '3' for nothing to happen");
+                sw.WriteLine("{0}={1}", CLICK_BEHAVIOUR, ClickBehaviour);
 
                 sw.WriteLine();
                 sw.WriteLine("# INTERNAL CONFIG");
